@@ -50,7 +50,7 @@ while True:
                     print(f"note {i} started")
                     midi.send([NoteOn(note, 60) for note in note_mapping[i]])
                     triggered_keys[i] = True
-                    
+
                 elif not pressed and triggered_keys[i]:
                     print(f"note {i} stopped")
                     midi.send([NoteOff(note, 0) for note in note_mapping[i]])
