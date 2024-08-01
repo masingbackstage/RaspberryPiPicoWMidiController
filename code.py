@@ -6,17 +6,17 @@ import adafruit_midi
 from adafruit_midi.note_on import NoteOn
 from adafruit_midi.note_off import NoteOff
 
-# Inicjalizacja MIDI
+# MIDI initialization
 midi = adafruit_midi.MIDI(midi_out=usb_midi.ports[1], out_channel=0)
-print("Orzel leci")
+print("Orzel leci")  # "The eagle is flying" in Polish
 
-# Definicje pinów dla przycisków
+# Pin definitions for buttons
 button_pins = [board.GP6, board.GP7, board.GP8, board.GP9]
 
-# Mapa nut MIDI przypisana do przycisków
-note_mapping = [["C3"], ["D3"], ["E3"], ["F3"], ["C4"], ["D4"], ["E4"], ["F4"]]
+# MIDI note mapping assigned to buttons
+note_mapping = [["C3"], ["D3"], ["E3"], ["F3"]]
 
-# Inicjalizacja przycisków
+# Button initialization
 buttons = []
 for bp in button_pins:
     button = digitalio.DigitalInOut(bp)
@@ -24,19 +24,14 @@ for bp in button_pins:
     button.pull = digitalio.Pull.UP
     buttons.append(button)
 
-# Stany przycisków i ich aktywacje
+# States of buttons and their activations
 pressed_keys = [False] * len(button_pins)
 triggered_keys = [False] * len(button_pins)
 
-# Czas do debouncingu
+# Debouncing time
 debounce_time = 0.05  # 50 ms
 last_time = [time.monotonic()] * len(button_pins)
 
-# Funkcja do obliczenia oktawy wyżej
-def octave_up(note):
-    note_name = note[:-1]
-    octave = int(note[-1])
-    return note_name + str(octave + 1)
 
 while True:
     current_time = time.monotonic()
@@ -47,9 +42,6 @@ while True:
                 pressed_keys[ix] = pressed
                 last_time[ix] = current_time
                     
-                
-
-
                 if pressed and not triggered_keys[ix]:
                     print(f"note {ix} started")
                     midi.send([NoteOn(note, 60) for note in note_mapping[ix]])
@@ -59,5 +51,5 @@ while True:
                     midi.send([NoteOff(note, 0) for note in note_mapping[ix]])
                     triggered_keys[ix] = False
 
-    # Krótkie opóźnienie przed kolejną iteracją
+    # Short delay before the next iteration
     time.sleep(0.01)
