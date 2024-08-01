@@ -8,7 +8,8 @@ from adafruit_midi.note_off import NoteOff
 
 # MIDI initialization
 midi = adafruit_midi.MIDI(midi_out=usb_midi.ports[1], out_channel=0)
-print("Orzel leci")  # "The eagle is flying" in Polish
+
+print("Orzel leci")  
 
 # Pin definitions for buttons
 button_pins = [board.GP6, board.GP7, board.GP8, board.GP9]
@@ -32,24 +33,28 @@ triggered_keys = [False] * len(button_pins)
 debounce_time = 0.05  # 50 ms
 last_time = [time.monotonic()] * len(button_pins)
 
-
+# Main loop
 while True:
     current_time = time.monotonic()
-    for ix, btn in enumerate(buttons):
-        if current_time - last_time[ix] > debounce_time:
+    
+    for i, btn in enumerate(buttons):
+
+        if current_time - last_time[i] > debounce_time:
             pressed = not btn.value
-            if pressed != pressed_keys[ix]:
-                pressed_keys[ix] = pressed
-                last_time[ix] = current_time
+
+            if pressed != pressed_keys[i]:
+                pressed_keys[i] = pressed
+                last_time[i] = current_time
                     
-                if pressed and not triggered_keys[ix]:
-                    print(f"note {ix} started")
-                    midi.send([NoteOn(note, 60) for note in note_mapping[ix]])
-                    triggered_keys[ix] = True
-                elif not pressed and triggered_keys[ix]:
-                    print(f"note {ix} stopped")
-                    midi.send([NoteOff(note, 0) for note in note_mapping[ix]])
-                    triggered_keys[ix] = False
+                if pressed and not triggered_keys[i]:
+                    print(f"note {i} started")
+                    midi.send([NoteOn(note, 60) for note in note_mapping[i]])
+                    triggered_keys[i] = True
+                    
+                elif not pressed and triggered_keys[i]:
+                    print(f"note {i} stopped")
+                    midi.send([NoteOff(note, 0) for note in note_mapping[i]])
+                    triggered_keys[i] = False
 
     # Short delay before the next iteration
     time.sleep(0.01)
