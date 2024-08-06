@@ -27,36 +27,33 @@ for bp in button_pins:
     pin.pull = digitalio.Pull.UP
     pins.append(pin)
     # Debouncer initialization with DigitalInOut objects
-    switch = adafruit_debouncer.Button(pin, 10, 1000)
+    switch = adafruit_debouncer.Button(pin, 10, 500)
     switches.append(switch)
 
 # Track the state of notes
-note_states = [False] * len(button_pins)
-
-
-
+note_states = [0] * len(button_pins)
 
 # Main loop
 while True:
     for i, switch in enumerate(switches):
         switch.update()
-        
-
-
-        if switch.long_press:  # Button was pressed
-            print(note_mapping[i + 4])
-            midi.send([NoteOn(note, 60) for note in note_mapping[i + 4]])
-            note_states[i] = True
-
-        elif switch.pressed and not switch.long_press:
-            print(note_mapping[i])
-            midi.send([NoteOn(note, 60) for note in note_mapping[i]])
-            note_states[i] = True  
+        if switch.long_press:  # Button pressed long
+            note_states[i] = 1
+        elif switch.pressed: # Button pressed
+            note_states[i] = 2
 
         elif switch.released:  # Button was released
-            print('not pressed')
+            if note_states[i] == 1:
+                print(note_mapping[i+4])
+                midi.send([NoteOn(note, 60) for note in note_mapping[i+4]])
+            elif note_states[i] == 2:
+                print(note_mapping[i])
+                midi.send([NoteOn(note, 60) for note in note_mapping[i]])
+
+            print('released')
             midi.send([NoteOff(note, 0) for note in note_mapping[i]])
-            note_states[i] = False
+            midi.send([NoteOff(note, 0) for note in note_mapping[i+4]])
+            note_states[i] = 0
 
     # Short delay before the next iteration
     time.sleep(0.01)
