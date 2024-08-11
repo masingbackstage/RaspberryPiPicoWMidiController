@@ -37,7 +37,7 @@ note_states = [0] * len(button_pins)
 red_led_pins =   [board.GP12, board.GP14, board.GP16, board.GP18]
 green_led_pins = [board.GP13, board.GP15, board.GP17, board.GP19]
 led_controllers = []
-for i in 4:
+for i in range(4):
     led_controller = LED(red_led_pins[i],green_led_pins[i])
     led_controllers.append(led_controller)
 
