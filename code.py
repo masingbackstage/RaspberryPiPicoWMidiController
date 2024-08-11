@@ -46,24 +46,29 @@ async def handle_button(i, switch):
         switch.update()
         if switch.long_press:  # Button pressed long
             note_states[i] = 1
-            await led_controllers[i].long_press()  # Using the LED controller's long press method
+            
         elif switch.pressed:  # Button pressed
             note_states[i] = 2
-            await led_controllers[i].short_press()  # Using the LED controller's short press method
+            
         elif switch.released:  # Button was released
             if note_states[i] == 1:
                 print(note_mapping[i + 4])
                 midi.send([NoteOn(note, 60) for note in note_mapping[i + 4]])
+                asyncio.create_task(led_controllers[i].long_press())  # Start LED animation in the background
             elif note_states[i] == 2:
                 print(note_mapping[i])
                 midi.send([NoteOn(note, 60) for note in note_mapping[i]])
+                asyncio.create_task(led_controllers[i].short_press())  # Start LED animation in the background
 
+            # Send NoteOff messages after a consistent delay
+            await asyncio.sleep(0.1)  # Consistent delay for both short and long presses
             print('released')
             midi.send([NoteOff(note, 0) for note in note_mapping[i]])
             midi.send([NoteOff(note, 0) for note in note_mapping[i + 4]])
             note_states[i] = 0
 
         await asyncio.sleep(0.01)
+
 
 async def main():
     tasks = [asyncio.create_task(handle_button(i, switch)) for i, switch in enumerate(switches)]
